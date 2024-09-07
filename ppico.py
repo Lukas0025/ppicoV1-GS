@@ -52,6 +52,12 @@ status         = "READY"
 def toHex(val, size):
     return f'%0{size}x' % val
 
+def twos_complement(hexstr, bits):
+    value = int(hexstr, 16)
+    if value & (1 << (bits - 1)):
+        value -= 1 << bits
+    return value
+
 def EEWRITE(addr, byte):
     return f"91{toHex(addr, 4)}{toHex(byte, 2)}"
 
@@ -232,7 +238,7 @@ def parseTelemetry(data, time):
         # 01  03    35   F5     01
         "rst":   int(data[0] + data[1], 16),
         "solar": (int(data[2] + data[3], 16) / 255) * 2.56,
-        "temp":  int(data[4] + data[5], 16) / 2,
+        "temp":  twos_complement(data[4] + data[5], 8) / 2,
         "press": int(data[6] + data[7], 16) * 4,
         "hptr":  int(data[8] + data[9], 16),
         "time":  time
